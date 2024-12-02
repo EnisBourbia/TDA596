@@ -172,7 +172,7 @@ func (c *Coordinator) monitorTasks() {
 		time.Sleep(1000 * time.Millisecond)
 		c.mu.Lock()
 		for i, task := range c.MapTasks {
-			if task.State == InProgress && time.Since(task.StartTime) > 10*time.Second {
+			if task.State == InProgress && time.Since(task.StartTime) > 20*time.Second {
 				c.MapTasks[i].State = Idle
 				log.Printf("Map task %d timed out. Reassigning...\n", i)
 			}

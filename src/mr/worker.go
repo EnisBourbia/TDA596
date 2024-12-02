@@ -42,7 +42,7 @@ func ihash(key string) int {
 
 // Worker is the entry point for a worker process.
 func Worker(mapf func(string, string) []KeyValue, reducef func(string, []string) string) {
-	var coordinatorAddress string = "127.0.0.1:1234"
+	var coordinatorAddress string = "13.60.16.194:1234"
 	/*flag.StringVar(&coordinatorAddress, "coordinator", "", "Coordinator address")
 	flag.Parse()
 
