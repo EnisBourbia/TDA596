@@ -8,6 +8,7 @@ type TaskRequest struct {
 type TaskResponse struct {
 	TaskType       string
 	FileName       string
+	InputData      string // New field
 	TaskID         int
 	NReduce        int
 	NFiles         int

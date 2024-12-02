@@ -1,6 +1,7 @@
 package mr
 
 import (
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -55,6 +56,11 @@ func (c *Coordinator) AssignTask(req *TaskRequest, res *TaskResponse) error {
 	// Assign a map task if any are available
 	for i, task := range c.MapTasks {
 		if task.State == Idle {
+			content, err := ioutil.ReadFile(task.FileName)
+			if err != nil {
+				log.Printf("Failed to read input file %v: %v", task.FileName, err)
+				continue // Skip this task and proceed to next
+			}
 			c.MapTasks[i].State = InProgress
 			c.MapTasks[i].WorkerID = req.WorkerID
 			c.MapTasks[i].StartTime = time.Now()
@@ -63,6 +69,7 @@ func (c *Coordinator) AssignTask(req *TaskRequest, res *TaskResponse) error {
 			res.TaskType = "map"
 			res.TaskID = i
 			res.FileName = task.FileName
+			res.InputData = string(content) // Include input data
 			res.NReduce = c.NReduce
 			res.WorkerID = req.WorkerID
 			return nil

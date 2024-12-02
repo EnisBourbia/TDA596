@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -135,12 +134,12 @@ func (w *WorkerInstance) RequestTask() TaskResponse {
 
 // PerformMapTask executes a map task assigned by the coordinator.
 func (w *WorkerInstance) PerformMapTask(task TaskResponse, mapf func(string, string) []KeyValue) {
-	content, err := ioutil.ReadFile(task.FileName)
-	if err != nil {
-		w.logger.Fatalf("Failed to read input file %v: %v", task.FileName, err)
+	content := task.InputData
+	if content == "" {
+		w.logger.Fatalf("Received empty input data for file %v", task.FileName)
 	}
 
-	kvs := mapf(task.FileName, string(content))
+	kvs := mapf(task.FileName, content)
 	buckets := make([][]KeyValue, task.NReduce)
 	for _, kv := range kvs {
 		bucket := ihash(kv.Key) % task.NReduce
