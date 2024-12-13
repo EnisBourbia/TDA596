@@ -1,46 +1,44 @@
 package mr
 
+import (
+	"os"
+	"strconv"
+)
+
+// KeyValue is a type used to hold key/value pairs.
+type KeyValue struct {
+	Key   string
+	Value string
+}
+
+// TaskRequest is sent by a worker to request a task.
 type TaskRequest struct {
 	WorkerID int
-	Address  string // Worker's network address
 }
 
-type TaskResponse struct {
-	TaskType       string
-	FileName       string
-	InputData      string // New field
-	TaskID         int
-	NReduce        int
-	NFiles         int
-	AllDone        bool
-	WorkerID       int
-	MapWorkerAddrs map[int]string // MapTaskID to Worker Address
+// TaskReply contains the details of the task assigned to the worker.
+type TaskReply struct {
+	Type      string // "Map", "Reduce", or "Wait"
+	TaskID    int
+	FileName  string   // For map tasks
+	NReduce   int      // Number of reduce tasks
+	NMap      int      // Number of map tasks
+	Completed bool     // Indicates if all tasks are completed
 }
 
-type TaskCompleteArgs struct {
-	TaskType string
-	TaskID   int
+// TaskCompletion is used by a worker to notify the coordinator of task completion.
+type TaskCompletion struct {
+	Type    string // "Map" or "Reduce"
+	TaskID  int
 	WorkerID int
 }
 
-type RegisterWorkerArgs struct {
-	Address string
-}
+// EmptyReply is used when no response data is needed.
+type EmptyReply struct{}
 
-type RegisterWorkerReply struct {
-	WorkerID int
-}
-
-type GetIntermediateDataArgs struct {
-	MapTaskID    int
-	ReduceTaskID int
-}
-
-type GetIntermediateDataReply struct {
-	Data []KeyValue
-}
-
-// Coordinator address function (modify as needed)
+// coordinatorSock generates a unique UNIX-domain socket name for the coordinator.
 func coordinatorSock() string {
-	return ":1234" // Coordinator listens on this port
+	s := "/var/tmp/5840-mr-"
+	s += strconv.Itoa(os.Getuid())
+	return s
 }
