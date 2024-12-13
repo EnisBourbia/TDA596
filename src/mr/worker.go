@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -16,6 +17,10 @@ import (
 type KeyValue struct {
 	Key   string
 	Value string
+}
+
+type IP struct {
+	Query string
 }
 
 type WorkerInstance struct {
@@ -96,7 +101,25 @@ func Worker(mapf func(string, string) []KeyValue, reducef func(string, []string)
 func (w *WorkerInstance) startRPCServer() {
 	rpc.Register(w)
 	rpc.HandleHTTP()
-	listener, err := net.Listen("tcp", ":0") // OS assigns an available port
+
+	req, err := http.Get("http://ip-api.com/json/")
+	if err != nil {
+		log.Fatalf("Could not get IP.")
+		//  return err.Error()
+	}
+	defer req.Body.Close()
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		log.Fatalf("Could not get IP.")
+		// return err.Error()
+	}
+
+	var ip IP
+	json.Unmarshal(body, &ip)
+
+	publicIP := ip.Query
+	listener, err := net.Listen("tcp", publicIP+":0")
 	if err != nil {
 		log.Fatal("Worker failed to listen:", err)
 	}
